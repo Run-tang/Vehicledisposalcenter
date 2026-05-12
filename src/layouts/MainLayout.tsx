@@ -49,9 +49,14 @@ const MainLayout = () => {
           onClick: () => navigate('/disposal/strategy'),
         },
         {
-          key: '/disposal/record',
-          label: '处置记录',
-          onClick: () => navigate('/disposal/record'),
+          key: '/disposal/wholesale-record',
+          label: '批发处置记录',
+          onClick: () => navigate('/disposal/wholesale-record'),
+        },
+        {
+          key: '/disposal/retail-record',
+          label: '零售处置记录',
+          onClick: () => navigate('/disposal/retail-record'),
         },
       ],
     },
@@ -90,6 +95,12 @@ const MainLayout = () => {
       } else {
         breadcrumbs.push({ title: '处置策略' });
       }
+    } else if (path.includes('/disposal/wholesale-record')) {
+      breadcrumbs.push({ title: '处置中心' });
+      breadcrumbs.push({ title: '批发处置记录' });
+    } else if (path.includes('/disposal/retail-record')) {
+      breadcrumbs.push({ title: '处置中心' });
+      breadcrumbs.push({ title: '零售处置记录' });
     } else if (path.includes('/disposal/record')) {
       breadcrumbs.push({ title: '处置中心' });
       if (path.match(/\/disposal\/record\/\d+/)) {
@@ -108,6 +119,8 @@ const MainLayout = () => {
   const getSelectedKeys = () => {
     const path = location.pathname;
     if (path.includes('/disposal/strategy')) return ['/disposal/strategy'];
+    if (path.includes('/disposal/wholesale-record')) return ['/disposal/wholesale-record'];
+    if (path.includes('/disposal/retail-record')) return ['/disposal/retail-record'];
     if (path.includes('/disposal/record')) return ['/disposal/record'];
     return [path];
   };

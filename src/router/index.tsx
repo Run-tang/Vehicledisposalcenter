@@ -4,6 +4,8 @@ import StrategyList from '../pages/Strategy/StrategyList';
 import StrategyDetail from '../pages/Strategy/StrategyDetail';
 import RecordList from '../pages/Record/RecordList';
 import RecordDetail from '../pages/Record/RecordDetail';
+import WholesaleRecordList from '../pages/Record/WholesaleRecordList';
+import RetailRecordList from '../pages/Record/RetailRecordList';
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +34,14 @@ export const router = createBrowserRouter([
           {
             path: 'record/:id',
             element: <RecordDetail />,
+          },
+          {
+            path: 'wholesale-record',
+            element: <WholesaleRecordList />,
+          },
+          {
+            path: 'retail-record',
+            element: <RetailRecordList />,
           },
         ],
       },

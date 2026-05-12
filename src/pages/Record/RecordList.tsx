@@ -36,11 +36,11 @@ const RecordList = () => {
   });
 
   const platformConfig = {
+    youjia: { color: '#8e24aa', text: '优加车拍' },
     zhuandian: { color: '#8e24aa', text: '专电优拍' },
     youliang: { color: '#00acc1', text: '有辆' },
     qichejie: { color: '#d81b60', text: '汽车街' },
     youxinpai: { color: '#f9ab00', text: '优信拍' },
-    offline: { color: '#5f6368', text: '线下门店' },
   };
 
   const resultConfig = {
@@ -363,11 +363,11 @@ const RecordList = () => {
                   onChange={(value) => setFilters({ ...filters, platform: value })}
                   allowClear
                 >
+                  <Option value="youjia">优加车拍</Option>
                   <Option value="zhuandian">专电优拍</Option>
                   <Option value="youliang">有辆</Option>
                   <Option value="qichejie">汽车街</Option>
                   <Option value="youxinpai">优信拍</Option>
-                  <Option value="offline">线下门店</Option>
                 </Select>
               </Col>
               <Col span={6} key="filter-result">

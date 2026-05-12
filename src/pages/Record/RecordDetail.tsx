@@ -23,11 +23,11 @@ const RecordDetail = () => {
   }
 
   const platformConfig = {
+    youjia: { color: '#8e24aa', text: '优加车拍' },
     zhuandian: { color: '#8e24aa', text: '专电优拍' },
     youliang: { color: '#00acc1', text: '有辆' },
     qichejie: { color: '#d81b60', text: '汽车街' },
     youxinpai: { color: '#f9ab00', text: '优信拍' },
-    offline: { color: '#5f6368', text: '线下门店' },
   };
 
   const resultConfig = {

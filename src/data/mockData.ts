@@ -1,37 +1,65 @@
 // 策略状态类型
-export type StrategyStatus = 'pending' | 'executing' | 'completed' | 'cancelled';
+export type StrategyStatus = 'pending_disposal' | 'executing' | 'completed' | 'cancelled';
 export type RecordResult = 'sold' | 'unsold' | 'bidding' | 'suspended';
-export type DisposalMethod = 'auction_open' | 'auction_sealed' | 'fixed_price' | 'wholesale' | 'resale' | 'scrap' | 'other';
-export type Platform = 'zhuandian' | 'youliang' | 'qichejie' | 'youxinpai' | 'offline';
+export type DisposalMethod = 'wholesale' | 'retail';
+export type DisposalType = 'wholesale' | 'retail';
+export type Platform = 'youjia' | 'zhuandian' | 'youliang' | 'qichejie' | 'youxinpai';
 export type VehicleGrade = 'S' | 'A' | 'B' | 'C' | 'D';
+export type VehicleSource = '收购' | '置换' | '寄售';
+export type VehicleCategory = '置换车' | '报废车' | '试驾车' | '厂家资源车';
+export type VehicleStatusType = '待拍卖' | '流拍' | '成交' | '寄售中' | '已成交' | '已取消';
 
 // 策略数据接口
 export interface Strategy {
   id: string;
-  strategyNo: string;
-  vin: string;
-  licensePlate: string;
-  brandModel: string;
-  brand: string;
-  model: string;
-  color: string;
-  year: number;
-  mileage: number;
-  method: DisposalMethod;
-  platform: Platform;
-  startPrice: number;
-  reservePrice: number;
-  increment: number;
-  fixedPrice?: number;
-  status: StrategyStatus;
-  createdTime: string;
-  creator: string;
-  location: string;
-  store: string;
-  vehicleStatus: string;
-  auctionCount: number;
-  purchasePrice: number;
-  suggestedPrice: number;
+  strategyNo: string; // 策略ID
+  vin: string; // VIN码
+  licensePlate: string; // 车牌号
+  brandModel: string; // 品牌车型
+  brand: string; // 品牌
+  model: string; // 车型
+  color: string; // 车身颜色
+  year: number; // 车辆年份
+  mileage: number; // 行驶里程
+
+  // 处置信息
+  disposalType: DisposalType; // 处置方式: 批发/零售
+  vehicleCategory?: VehicleCategory; // 车辆类别(仅批发)
+  retailVehicleType?: string; // 零售车辆类型(仅零售)
+  platform: Platform; // 处置渠道平台
+  channelName: string; // 处置渠道名称
+
+  // 财务指标
+  purchasePrice: number; // 收购价格
+  currentReservePrice: number; // 当前保留价/底价(批发:建议保留价,零售:寄售底价)
+  standardReservePrice: number; // 公司标准保留价
+  marketPriceMin?: number; // 市场价格区间-最起价(仅批发)
+  marketPriceMax?: number; // 市场价格区间-最高价(仅批发)
+  auctionMaxPrice: number | null; // 拍卖最高价(仅批发)
+  retailPrice: number | null; // 零售价格(仅零售)
+  reservePriceReason?: string; // 保留价异常说明
+
+  // 状态信息
+  status: StrategyStatus; // 策略状态
+  vehicleStatus: VehicleStatusType; // 车辆状态
+  disposalCount: number; // 处置次数
+
+  // 基础信息
+  location: string; // 车辆所在地(省-市)
+  store: string; // 所属门店
+  purchaseTime: string; // 收车时间
+  inventoryDays: number; // 库存时长
+  creator: string; // 创建人
+  createdTime: string; // 创建时间
+  updatedTime: string; // 更新时间
+  source: VehicleSource; // 车辆来源
+
+  // 批发特有字段
+  transferDays?: number; // 过户天数(仅批发)
+  transferNote?: string; // 过户时效说明(仅批发)
+  vehicleConditionDesc?: string; // 车况信息特别描述
+
+  // 其他信息
   grade: VehicleGrade;
   assessor: string;
   assessTime: string;
@@ -39,14 +67,13 @@ export interface Strategy {
   frameRepair: number;
   majorDamage: string;
   assessorNote: string;
-  validFrom: string;
-  validTo: string;
   autoDispatch: boolean;
-  remarks: string;
-  source: string;
+  remarks: string; // 策略备注
+  cancelReason?: string; // 取消原因
   ownerType: string;
   useType: string;
   keeper: string;
+  keeperPhone?: string; // 保管人电话
   inboundTime: string;
 }
 
@@ -166,55 +193,166 @@ const operators = ['张三', '李四', '王五', '赵六', '钱七'];
 const dealers = ['车商A', '车商B', '车商C', '车商D', '车商E', '车商F', '车商G', '车商H'];
 
 // 生成策略数据
-export const mockStrategies: Strategy[] = Array.from({ length: 50 }, (_, i) => {
+export const mockStrategies: Strategy[] = Array.from({ length: 60 }, (_, i) => {
   const vehicle = vehicles[i % vehicles.length];
+
+  // 确保每个状态都有足够的数据
   const status: StrategyStatus =
-    i < 10 ? 'executing' :
-    i < 20 ? 'pending' :
-    i < 35 ? 'completed' :
-    'cancelled';
-  const method: DisposalMethod =
-    i % 5 === 0 ? 'fixed_price' :
-    i % 5 === 1 ? 'auction_sealed' :
-    i % 5 === 2 ? 'wholesale' :
-    i % 5 === 3 ? 'resale' :
-    'auction_open';
-  const platform: Platform = ['zhuandian', 'youliang', 'qichejie', 'youxinpai'][i % 4] as Platform;
-  const purchasePrice = 50000 + (i * 5000);
-  const startPrice = Math.round(purchasePrice * 1.1);
-  const reservePrice = Math.round(purchasePrice * 1.2);
+    i < 10 ? 'pending_disposal' :  // 10条待处置
+    i < 28 ? 'executing' :          // 18条执行中
+    i < 48 ? 'completed' :          // 20条已完成
+    'cancelled';                    // 12条已取消
+
+  const disposalType: DisposalType = i % 3 === 0 ? 'retail' : 'wholesale';
+  const platform: Platform = disposalType === 'wholesale'
+    ? (['youjia', 'zhuandian', 'youliang', 'qichejie', 'youxinpai'][i % 5] as Platform)
+    : 'youjia';
+
+  const vehicleCategory: VehicleCategory = ['置换车', '报废车', '试驾车', '厂家资源车'][i % 4] as VehicleCategory;
+  const source: VehicleSource = ['收购', '置换', '寄售'][i % 3] as VehicleSource;
+
+  const purchasePrice = 50000 + (i * 3000);
+  const standardReservePrice = purchasePrice < 10000 ? purchasePrice + 500 :
+                               purchasePrice < 30000 ? purchasePrice + 800 :
+                               purchasePrice + 1000;
+  const currentReservePrice = standardReservePrice + (i % 3) * 500;
   const grade: VehicleGrade = ['S', 'A', 'A', 'B', 'C', 'D'][i % 6] as VehicleGrade;
 
-  const createdDate = new Date(2026, 3, 30 - Math.floor(i / 2));
-  const assessDate = new Date(createdDate.getTime() - 24 * 60 * 60 * 1000);
-  const inboundDate = new Date(createdDate.getTime() - 10 * 24 * 60 * 60 * 1000);
+  const createdDate = new Date(2026, 4, 8 - Math.floor(i / 3));
+  const purchaseDate = new Date(createdDate.getTime() - (15 + i * 2) * 24 * 60 * 60 * 1000);
+  const inboundDate = new Date(purchaseDate.getTime() + 24 * 60 * 60 * 1000);
+  const assessDate = new Date(purchaseDate.getTime() + 12 * 60 * 60 * 1000);
+  const updatedDate = new Date(createdDate.getTime() + (i % 5) * 24 * 60 * 60 * 1000);
+
+  // 计算库存时长
+  const today = new Date(2026, 4, 8);
+  const inventoryDays = Math.floor((today.getTime() - inboundDate.getTime()) / (24 * 60 * 60 * 1000));
+
+  // 根据状态确定车辆状态
+  let vehicleStatus: VehicleStatusType;
+  if (status === 'pending_disposal') {
+    vehicleStatus = disposalType === 'wholesale' ? '待拍卖' : '寄售中';
+  } else if (status === 'executing') {
+    if (disposalType === 'wholesale') {
+      vehicleStatus = i % 3 === 0 ? '待拍卖' : i % 3 === 1 ? '流拍' : '待拍卖';
+    } else {
+      vehicleStatus = '寄售中';
+    }
+  } else if (status === 'completed') {
+    vehicleStatus = disposalType === 'wholesale' ? '成交' : '已成交';
+  } else {
+    vehicleStatus = '已取消';
+  }
+
+  // 拍卖最高价
+  let auctionMaxPrice: number | null = null;
+  if (disposalType === 'wholesale') {
+    if (status === 'completed') {
+      auctionMaxPrice = currentReservePrice + 2000 + (i % 10) * 500;
+    } else if (status === 'executing' && vehicleStatus === '流拍') {
+      auctionMaxPrice = currentReservePrice - 1000;
+    } else if (status === 'executing' && i % 2 === 0) {
+      auctionMaxPrice = currentReservePrice - 500;
+    }
+  }
+
+  // 零售价格
+  let retailPrice: number | null = null;
+  if (disposalType === 'retail') {
+    retailPrice = currentReservePrice + 3000 + (i % 5) * 1000;
+  }
+
+  // 零售车辆类型
+  const retailVehicleTypes = ['精品车', '经济适用车', '豪华车', '新能源车', '特价车'];
+  const retailVehicleType = disposalType === 'retail' ? retailVehicleTypes[i % 5] : undefined;
+
+  // 渠道名称
+  const platformNames = {
+    youjia: '优加车拍',
+    zhuandian: '专电优拍',
+    youliang: '有辆',
+    qichejie: '汽车街',
+    youxinpai: '优信拍',
+  };
+  const retailChannels = ['线下门店', '自营电商平台', '合作经销商', '第三方平台'];
+  const channelName = disposalType === 'wholesale'
+    ? platformNames[platform]
+    : retailChannels[i % 4];
+
+  // 保留价异常说明
+  const reservePriceReason = currentReservePrice < standardReservePrice
+    ? `市场行情下滑，建议适当降低保留价以提高成交率。参考近期同类车型成交数据，此价格仍在合理范围内。`
+    : undefined;
+
+  // 批发特有字段
+  const transferDays = disposalType === 'wholesale' ? (7 + (i % 3) * 7) : undefined;
+  const transferNote = disposalType === 'wholesale' && i % 2 === 0
+    ? '节假日顺延，逾期每日产生违约金500元'
+    : undefined;
+  const vehicleConditionDesc = i % 3 === 0
+    ? '车辆后翼子板有补漆，更换了原厂轮胎，其他部位均为原版原漆。'
+    : undefined;
+
+  // 保管人电话
+  const keeperPhone = `138${String(10000000 + i).slice(-8)}`;
+
+  const cancelReasons = [
+    '车辆已通过其他渠道处置',
+    '车辆信息有误，需重新评估',
+    '客户要求撤回',
+    '市场行情变化，需重新定价',
+  ];
 
   return {
     id: String(i + 1),
-    strategyNo: `CL${createdDate.getFullYear()}${String(createdDate.getMonth() + 1).padStart(2, '0')}${String(createdDate.getDate()).padStart(2, '0')}${String(1000 + i).slice(-6)}`,
+    strategyNo: `STR${createdDate.getFullYear()}${String(createdDate.getMonth() + 1).padStart(2, '0')}${String(createdDate.getDate()).padStart(2, '0')}${String(10000 + i).slice(-5)}`,
     vin: generateVIN(i),
     licensePlate: generatePlate(i),
-    brandModel: `${vehicle.brand}/${vehicle.model}`,
+    brandModel: `${vehicle.brand}-${vehicle.model}`,
     brand: vehicle.brand,
     model: vehicle.model,
     color: vehicle.color,
     year: vehicle.year,
     mileage: 10000 + (i * 3000),
-    method,
+
+    // 处置信息
+    disposalType,
+    vehicleCategory: disposalType === 'wholesale' ? vehicleCategory : undefined,
+    retailVehicleType,
     platform,
-    startPrice,
-    reservePrice,
-    increment: 500,
-    fixedPrice: method === 'fixed_price' ? reservePrice : undefined,
-    status,
-    createdTime: `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}-${String(createdDate.getDate()).padStart(2, '0')} ${String(10 + (i % 8)).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}`,
-    creator: operators[i % operators.length],
-    location: '河南郑州',
-    store: stores[i % stores.length],
-    vehicleStatus: status === 'completed' ? '已售出' : status === 'executing' ? '在库-已预定' : '在库-待处置',
-    auctionCount: status === 'executing' ? (i % 3) : status === 'completed' ? (1 + i % 3) : 0,
+    channelName,
+
+    // 财务指标
     purchasePrice,
-    suggestedPrice: Math.round(purchasePrice * 1.15),
+    currentReservePrice,
+    standardReservePrice,
+    marketPriceMin: disposalType === 'wholesale' ? Math.round((purchasePrice - 5000) / 10000 * 100) / 100 : undefined,
+    marketPriceMax: disposalType === 'wholesale' ? Math.round((purchasePrice + 8000) / 10000 * 100) / 100 : undefined,
+    auctionMaxPrice,
+    retailPrice,
+    reservePriceReason,
+
+    // 状态信息
+    status,
+    vehicleStatus,
+    disposalCount: status === 'executing' ? (1 + i % 2) : status === 'completed' ? (1 + i % 3) : status === 'cancelled' ? (i % 2) : 0,
+
+    // 基础信息
+    location: i % 5 === 0 ? '河南-郑州' : i % 5 === 1 ? '广东-深圳' : i % 5 === 2 ? '北京-北京' : i % 5 === 3 ? '上海-上海' : '浙江-杭州',
+    store: stores[i % stores.length],
+    purchaseTime: `${purchaseDate.getFullYear()}-${String(purchaseDate.getMonth() + 1).padStart(2, '0')}-${String(purchaseDate.getDate()).padStart(2, '0')}`,
+    inventoryDays,
+    creator: operators[i % operators.length],
+    createdTime: `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}-${String(createdDate.getDate()).padStart(2, '0')} ${String(10 + (i % 8)).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}`,
+    updatedTime: `${updatedDate.getFullYear()}-${String(updatedDate.getMonth() + 1).padStart(2, '0')}-${String(updatedDate.getDate()).padStart(2, '0')} ${String(14 + (i % 6)).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}`,
+    source,
+
+    // 批发特有字段
+    transferDays,
+    transferNote,
+    vehicleConditionDesc,
+
+    // 其他信息
     grade,
     assessor: assessors[i % assessors.length],
     assessTime: `${assessDate.getFullYear()}-${String(assessDate.getMonth() + 1).padStart(2, '0')}-${String(assessDate.getDate()).padStart(2, '0')} ${String(10 + (i % 5)).padStart(2, '0')}:30`,
@@ -222,14 +360,13 @@ export const mockStrategies: Strategy[] = Array.from({ length: 50 }, (_, i) => {
     frameRepair: grade === 'D' ? (1 + i % 2) : grade === 'C' ? (i % 2) : 0,
     majorDamage: grade === 'D' ? '骨架受损,建议降价处置' : grade === 'C' ? '轻微事故' : '无',
     assessorNote: grade === 'S' ? '车况极佳,原版原漆,可快速处置' : grade === 'A' ? '车况良好,仅有轻微划痕' : grade === 'B' ? '车况一般,需适当降价' : grade === 'C' ? '有事故记录,建议谨慎定价' : '事故车,建议大幅降价',
-    validFrom: createdDate.toISOString().slice(0, 16),
-    validTo: new Date(createdDate.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
     autoDispatch: i % 3 === 0,
     remarks: i % 4 === 0 ? `${vehicle.brand}${vehicle.model},车况${grade}级,建议快速处置` : '',
-    source: i % 3 === 0 ? '平台采买' : i % 3 === 1 ? '车商寄售' : '个人车源',
+    cancelReason: status === 'cancelled' ? cancelReasons[i % cancelReasons.length] : undefined,
     ownerType: i % 2 === 0 ? '个人' : '单位',
     useType: i % 4 === 0 ? '营运' : '非营运',
     keeper: `保管员${String.fromCharCode(65 + (i % 5))}`,
+    keeperPhone,
     inboundTime: `${inboundDate.getFullYear()}-${String(inboundDate.getMonth() + 1).padStart(2, '0')}-${String(inboundDate.getDate()).padStart(2, '0')} 09:15`,
   };
 });
@@ -237,7 +374,10 @@ export const mockStrategies: Strategy[] = Array.from({ length: 50 }, (_, i) => {
 // 生成处置记录数据
 export const mockRecords: DisposalRecord[] = [];
 mockStrategies.forEach((strategy, strategyIndex) => {
-  const recordCount = strategy.auctionCount || (strategy.status === 'completed' ? 1 : 0);
+  // 只有批发类型才有处置记录
+  if (strategy.disposalType !== 'wholesale') return;
+
+  const recordCount = strategy.disposalCount || (strategy.status === 'completed' ? 1 : 0);
 
   for (let i = 0; i < recordCount; i++) {
     const isLastRecord = i === recordCount - 1;
@@ -262,8 +402,9 @@ mockStrategies.forEach((strategy, strategyIndex) => {
     const bidCount = result === 'suspended' ? 0 : bidderCount * (1 + Math.floor(Math.random() * 4));
 
     const priceAdjustment = i * 5000;
-    const currentStartPrice = strategy.startPrice - priceAdjustment;
-    const currentReservePrice = strategy.reservePrice - priceAdjustment;
+    const currentStartPrice = Math.round(strategy.currentReservePrice * 0.85) - priceAdjustment;
+    const currentReservePrice = strategy.currentReservePrice - priceAdjustment;
+    const increment = 500;
 
     let maxBid: number | null = null;
     if (result === 'sold') {
@@ -289,7 +430,7 @@ mockStrategies.forEach((strategy, strategyIndex) => {
       endTime: `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')} ${String(endDate.getHours()).padStart(2, '0')}:00`,
       startPrice: currentStartPrice,
       reservePrice: currentReservePrice,
-      increment: strategy.increment,
+      increment,
       viewCount,
       bidderCount,
       bidCount,
@@ -339,33 +480,41 @@ mockStrategies.forEach((strategy) => {
     operator: strategy.creator,
     action: '创建了处置策略',
     time: strategy.createdTime,
-    details: `处置方式: ${strategy.method}, 起拍价: ¥${strategy.startPrice.toLocaleString()}, 保留价: ¥${strategy.reservePrice.toLocaleString()}`,
+    details: `处置方式: ${strategy.disposalType === 'wholesale' ? '批发' : '零售'}, 当前保留价: ¥${strategy.currentReservePrice.toLocaleString()}, 公司标准保留价: ¥${strategy.standardReservePrice.toLocaleString()}`,
     type: 'strategy',
   });
 
   // 状态变更日志
   if (strategy.status === 'executing' || strategy.status === 'completed') {
     const executeDate = new Date(createdDate.getTime() + 2 * 60 * 60 * 1000);
+    const platformNames = {
+      youjia: '优加车拍',
+      zhuandian: '专电优拍',
+      youliang: '有辆',
+      qichejie: '汽车街',
+      youxinpai: '优信拍',
+    };
     mockOperationLogs.push({
       id: `log-${strategy.id}-2`,
       relatedId: strategy.id,
       operator: '系统',
       action: '策略状态变更',
       time: `${executeDate.getFullYear()}-${String(executeDate.getMonth() + 1).padStart(2, '0')}-${String(executeDate.getDate()).padStart(2, '0')} ${String(executeDate.getHours()).padStart(2, '0')}:${String(executeDate.getMinutes()).padStart(2, '0')}`,
-      details: `待执行 → 执行中(车辆已上架至${strategy.platform}平台)`,
+      details: `待处置 → 执行中(车辆已上架至${platformNames[strategy.platform]}平台)`,
       type: 'strategy',
     });
   }
 
-  if (strategy.auctionCount > 1) {
+  if (strategy.disposalCount > 1) {
     const adjustDate = new Date(createdDate.getTime() + 24 * 60 * 60 * 1000);
+    const oldPrice = strategy.currentReservePrice + 5000;
     mockOperationLogs.push({
       id: `log-${strategy.id}-3`,
       relatedId: strategy.id,
       operator: strategy.creator,
       action: '调整了处置策略',
       time: `${adjustDate.getFullYear()}-${String(adjustDate.getMonth() + 1).padStart(2, '0')}-${String(adjustDate.getDate()).padStart(2, '0')} 10:30`,
-      details: `调整原因: 流拍-起拍价过高, 起拍价: ¥${strategy.startPrice.toLocaleString()} → ¥${(strategy.startPrice - 5000).toLocaleString()}`,
+      details: `调整原因: 流拍-保留价过高, 当前保留价: ¥${oldPrice.toLocaleString()} → ¥${strategy.currentReservePrice.toLocaleString()}`,
       type: 'strategy',
     });
   }
@@ -378,13 +527,13 @@ mockStrategies.forEach((strategy) => {
       operator: strategy.creator,
       action: '取消了处置策略',
       time: `${cancelDate.getFullYear()}-${String(cancelDate.getMonth() + 1).padStart(2, '0')}-${String(cancelDate.getDate()).padStart(2, '0')} ${String(cancelDate.getHours()).padStart(2, '0')}:${String(cancelDate.getMinutes()).padStart(2, '0')}`,
-      details: '取消原因: 车辆已通过其他渠道售出',
+      details: strategy.cancelReason || '取消原因: 车辆已通过其他渠道售出',
       type: 'strategy',
     });
   }
 
   if (strategy.status === 'completed') {
-    const completeDate = new Date(createdDate.getTime() + (strategy.auctionCount + 1) * 24 * 60 * 60 * 1000);
+    const completeDate = new Date(createdDate.getTime() + (strategy.disposalCount + 1) * 24 * 60 * 60 * 1000);
     mockOperationLogs.push({
       id: `log-${strategy.id}-complete`,
       relatedId: strategy.id,
