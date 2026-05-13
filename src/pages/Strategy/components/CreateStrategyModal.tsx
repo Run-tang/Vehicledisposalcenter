@@ -142,6 +142,15 @@ ${values.remarks ? `[创建人备注]：${values.remarks}` : ''}
             </Descriptions>
 
             <div style={{ marginTop: 12 }}>
+              {/* 【P0修复】车辆所在地：可编辑输入框，默认映射库存地址 */}
+              <Form.Item
+                label="车辆所在地"
+                name="vehicleLocation"
+                initialValue={vehicle?.location}
+                rules={[{ required: true, message: '请输入车辆所在地' }]}
+              >
+                <Input placeholder="请输入车辆所在地" maxLength={50} />
+              </Form.Item>
               <Form.Item
                 label="车辆保管人姓名"
                 name="keeperName"
@@ -455,13 +464,22 @@ ${values.remarks ? `[创建人备注]：${values.remarks}` : ''}
               </Form.Item>
             </Form.Item>
 
-            {/* 【P0修复】新增零售价格字段 */}
+            {/* 【P0修复】新增零售价格字段（必须≥寄售底价） */}
             <Form.Item
-              label={<span>填写零售价格 <span style={{ color: '#80868b', fontSize: 12 }}>(单位：万元)</span></span>}
+              label={<span>填写零售价格 <span style={{ color: '#80868b', fontSize: 12 }}>(单位：万元，必须≥寄售底价)</span></span>}
               name="retailPrice"
               rules={[
                 { required: true, message: '请输入零售价格' },
                 { type: 'number', min: 0.01, message: '零售价格必须大于0' },
+                {
+                  validator: (_, value) => {
+                    const consignmentPrice = form.getFieldValue('consignmentPrice');
+                    if (consignmentPrice && value < consignmentPrice) {
+                      return Promise.reject('零售价格不能低于寄售底价');
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <InputNumber
@@ -481,16 +499,6 @@ ${values.remarks ? `[创建人备注]：${values.remarks}` : ''}
                 showCount
                 placeholder="对车辆收车评估报告中未提及或有变动的特殊车况进行补充说明（非必填，最多500字）"
               />
-            </Form.Item>
-
-            {/* 【P0修复】新增车辆所在地字段（零售场景可编辑） */}
-            <Form.Item
-              label="车辆所在地"
-              name="vehicleLocation"
-              initialValue={vehicle?.location}
-              rules={[{ required: true, message: '请输入车辆所在地' }]}
-            >
-              <Input placeholder="请输入车辆所在地" maxLength={50} />
             </Form.Item>
           </Card>
         )}
