@@ -9,7 +9,7 @@ import {
   message,
   Row,
   Col,
-  Tabs,
+
   DatePicker,
   InputNumber,
   Space as AntSpace,
@@ -37,7 +37,6 @@ const WholesaleRecordList = () => {
   const [dataSource, setDataSource] = useState<DisposalRecord[]>(mockRecords);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [filterExpanded, setFilterExpanded] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>('all');
 
   // 筛选条件
   const [filters, setFilters] = useState({
@@ -398,9 +397,6 @@ const WholesaleRecordList = () => {
     },
   ];
 
-  const handleTabChange = (key: string) => {
-    setActiveTab(key);
-  };
 
   useEffect(() => {
     handleSearch();
@@ -447,7 +443,6 @@ const WholesaleRecordList = () => {
       dealTimeRange: null,
       updateTimeRange: null,
     });
-    setActiveTab('all');
     setDataSource(mockRecords);
     setPagination({ ...pagination, total: mockRecords.length, current: 1 });
   };
@@ -468,21 +463,7 @@ const WholesaleRecordList = () => {
     },
   };
 
-  const tabStats = {
-    all: mockRecords.length,
-    pending_disposal: 10,
-    executing: 18,
-    completed: 20,
-    cancelled: 12,
-  };
 
-  const tabItems = [
-    { key: 'all', label: `全部(${tabStats.all})` },
-    { key: 'pending_disposal', label: `待处置(${tabStats.pending_disposal})` },
-    { key: 'executing', label: `执行中(${tabStats.executing})` },
-    { key: 'completed', label: `已完成(${tabStats.completed})` },
-    { key: 'cancelled', label: `已取消(${tabStats.cancelled})` },
-  ];
 
   return (
     <div style={{ padding: '0 24px', maxWidth: '1920px', margin: '0 auto' }}>
@@ -493,14 +474,6 @@ const WholesaleRecordList = () => {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Tab筛选器 */}
-        <div key="section-tabs" style={{ background: '#fff', borderRadius: '8px', padding: '16px 20px', boxShadow: '0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15)', border: '1px solid #dadce0' }}>
-          <Tabs
-            activeKey={activeTab}
-            onChange={handleTabChange}
-            items={tabItems}
-          />
-        </div>
 
         {/* 筛选栏 */}
         <div key="section-filters" className="filter-section">
