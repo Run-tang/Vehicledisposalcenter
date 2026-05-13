@@ -11,7 +11,7 @@ import {
   DownOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import imgLogo from '../imports/专电优拍/5d9a8c8637ea165fdc1f57808dec85e631fbffcf.png';
+import imgLogo from '../imports/logo.png';
 
 const { Header, Sider, Content } = Layout;
 
