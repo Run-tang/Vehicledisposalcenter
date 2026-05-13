@@ -59,7 +59,6 @@ const StrategyList = () => {
     platform: '',
     status: '',
     disposalType: '',
-    source: '',
     retailVehicleType: '',
     vehicleCategory: '',
   });
@@ -349,6 +348,32 @@ const StrategyList = () => {
           {status}
         </Tag>
       ),
+    },
+    {
+      title: '办证费(元)',
+      dataIndex: 'certificateFee',
+      key: 'certificateFee',
+      width: 120,
+      align: 'right',
+      render: (fee, record) =>
+        record.disposalType === 'wholesale' && fee !== undefined ? (
+          <span style={{ fontWeight: 500 }}>¥{fee.toLocaleString()}</span>
+        ) : (
+          <span style={{ color: '#80868b' }}>-</span>
+        ),
+    },
+    {
+      title: '交付服务费(元)',
+      dataIndex: 'deliveryServiceFee',
+      key: 'deliveryServiceFee',
+      width: 130,
+      align: 'right',
+      render: (fee, record) =>
+        record.disposalType === 'wholesale' && fee !== undefined ? (
+          <span style={{ fontWeight: 500 }}>¥{fee.toLocaleString()}</span>
+        ) : (
+          <span style={{ color: '#80868b' }}>-</span>
+        ),
     },
     {
       title: '处置次数',
@@ -673,9 +698,6 @@ const StrategyList = () => {
     if (filters.disposalType) {
       filtered = filtered.filter(item => item.disposalType === filters.disposalType);
     }
-    if (filters.source) {
-      filtered = filtered.filter(item => item.source === filters.source);
-    }
     if (filters.retailVehicleType) {
       filtered = filtered.filter(item => item.retailVehicleType?.includes(filters.retailVehicleType));
     }
@@ -727,9 +749,6 @@ const StrategyList = () => {
       if (filters.disposalType) {
         filtered = filtered.filter(item => item.disposalType === filters.disposalType);
       }
-      if (filters.source) {
-        filtered = filtered.filter(item => item.source === filters.source);
-      }
       if (filters.retailVehicleType) {
         filtered = filtered.filter(item => item.retailVehicleType?.includes(filters.retailVehicleType));
       }
@@ -751,7 +770,6 @@ const StrategyList = () => {
       platform: '',
       status: '',
       disposalType: '',
-      source: '',
       retailVehicleType: '',
       vehicleCategory: '',
     });
@@ -912,21 +930,25 @@ const StrategyList = () => {
                     </Select>
                   </div>
                 </Col>
-                <Col span={6} key="filter-source">
+                <Col span={6} key="filter-status">
                   <div>
                     <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>
-                      车辆来源
+                      策略状态
                     </div>
                     <Select
                       placeholder="请选择"
                       style={{ width: '100%' }}
-                      value={filters.source || undefined}
-                      onChange={(value) => setFilters({ ...filters, source: value })}
+                      value={filters.status || undefined}
+                      onChange={(value) => {
+                        setFilters({ ...filters, status: value });
+                        setActiveTab(value || 'all');
+                      }}
                       allowClear
                     >
-                      <Option value="收购">收购</Option>
-                      <Option value="置换">置换</Option>
-                      <Option value="寄售">寄售</Option>
+                      <Option value="pending_disposal">待处置</Option>
+                      <Option value="executing">执行中</Option>
+                      <Option value="completed">已完成</Option>
+                      <Option value="cancelled">已取消</Option>
                     </Select>
                   </div>
                 </Col>

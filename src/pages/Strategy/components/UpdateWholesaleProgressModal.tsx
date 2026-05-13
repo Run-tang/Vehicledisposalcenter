@@ -246,6 +246,18 @@ const UpdateWholesaleProgressModal = ({ visible, strategy, onClose, onSuccess }:
                 addonAfter="元"
               />
             </Form.Item>
+
+            {/* 【P0修复】新增交付服务费字段 */}
+            <Form.Item label="交付服务费(元)" name="deliveryServiceFee">
+              <InputNumber
+                min={0}
+                max={999999}
+                precision={2}
+                placeholder="请输入交付服务费"
+                style={{ width: '100%' }}
+                addonAfter="元"
+              />
+            </Form.Item>
           </>
         )}
 

@@ -92,6 +92,14 @@ const StrategyDetail = () => {
       render: (time) => time.split(' ')[0],
     },
     {
+      title: '处置次数',
+      dataIndex: 'auctionCount',
+      key: 'auctionCount',
+      width: 100,
+      align: 'center',
+      render: (count) => count || 1,
+    },
+    {
       title: '拍卖保留价(万)',
       dataIndex: 'reservePrice',
       key: 'reservePrice',
@@ -195,11 +203,35 @@ const StrategyDetail = () => {
         ),
     },
     {
+      title: '办证费(元)',
+      dataIndex: 'certificateFee',
+      key: 'certificateFee',
+      width: 100,
+      align: 'right',
+      render: (fee) => fee ? `¥${fee}` : '-',
+    },
+    {
+      title: '交付服务费(元)',
+      dataIndex: 'deliveryServiceFee',
+      key: 'deliveryServiceFee',
+      width: 120,
+      align: 'right',
+      render: (fee) => fee ? `¥${fee}` : '-',
+    },
+    {
       title: '车辆所在地',
       key: 'location',
       width: 120,
       align: 'center',
       render: () => strategy.location,
+    },
+    {
+      title: '拍卖备注说明',
+      dataIndex: 'remarks',
+      key: 'remarks',
+      width: 150,
+      ellipsis: true,
+      render: (remark) => remark || '-',
     },
     {
       title: '操作人姓名',
@@ -379,16 +411,15 @@ const StrategyDetail = () => {
       fixed: 'right',
       align: 'center',
       render: (_, record) => (
-        record.isDeal ? (
-          <Button
-            type="link"
-            size="small"
-            icon={<FileTextOutlined />}
-            onClick={() => message.info('跳转到零售订单详情页')}
-          >
-            查看零售订单
-          </Button>
-        ) : null
+        // 【P1修复】无论是否成交都显示详情按钮
+        <Button
+          type="link"
+          size="small"
+          icon={<FileTextOutlined />}
+          onClick={() => message.info('跳转到零售订单详情页')}
+        >
+          查看详情
+        </Button>
       ),
     },
   ];
@@ -526,6 +557,17 @@ const StrategyDetail = () => {
                 </div>
                 <div style={{ fontSize: 12, color: '#80868b', marginBottom: 8 }}>
                   {log.time}
+                  {/* 【P1修复】新增IP地址/客户端审计字段 */}
+                  {log.ipAddress && (
+                    <span style={{ marginLeft: 12 }}>
+                      <span style={{ color: '#9aa0a6' }}>IP:</span> {log.ipAddress}
+                    </span>
+                  )}
+                  {log.clientInfo && (
+                    <span style={{ marginLeft: 12 }}>
+                      <span style={{ color: '#9aa0a6' }}>设备:</span> {log.clientInfo}
+                    </span>
+                  )}
                 </div>
                 {log.details && (
                   <div style={{

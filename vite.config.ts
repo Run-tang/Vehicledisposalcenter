@@ -17,6 +17,11 @@ function figmaAssetResolver() {
 }
 
 export default defineConfig({
+  // GitHub Pages 部署配置
+  // 如果仓库名是 username.github.io，则 base 设为 '/' 
+  // 如果是项目仓库如 username/repo-name，则 base 设为 '/repo-name/'
+  base: '/Vehicledisposalcenter/',
+  
   plugins: [
     figmaAssetResolver(),
     // The React and Tailwind plugins are both required for Make, even if
@@ -29,6 +34,15 @@ export default defineConfig({
       // Alias @ to the src directory
       '@': path.resolve(__dirname, './src'),
     },
+  },
+
+  // SPA fallback - 所有404请求都返回 index.html
+  server: {
+    historyApiFallback: true,
+  },
+
+  preview: {
+    historyApiFallback: true,
   },
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.

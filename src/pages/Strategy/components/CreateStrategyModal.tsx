@@ -454,6 +454,44 @@ ${values.remarks ? `[创建人备注]：${values.remarks}` : ''}
                 }}
               </Form.Item>
             </Form.Item>
+
+            {/* 【P0修复】新增零售价格字段 */}
+            <Form.Item
+              label={<span>填写零售价格 <span style={{ color: '#80868b', fontSize: 12 }}>(单位：万元)</span></span>}
+              name="retailPrice"
+              rules={[
+                { required: true, message: '请输入零售价格' },
+                { type: 'number', min: 0.01, message: '零售价格必须大于0' },
+              ]}
+            >
+              <InputNumber
+                min={0.01}
+                precision={2}
+                placeholder="请输入零售价格"
+                style={{ width: '200px' }}
+                addonAfter="万元"
+              />
+            </Form.Item>
+
+            {/* 【P0修复】新增车况信息特别描述字段（零售场景） */}
+            <Form.Item label="车况信息特别描述" name="vehicleConditionDesc">
+              <TextArea
+                rows={4}
+                maxLength={500}
+                showCount
+                placeholder="对车辆收车评估报告中未提及或有变动的特殊车况进行补充说明（非必填，最多500字）"
+              />
+            </Form.Item>
+
+            {/* 【P0修复】新增车辆所在地字段（零售场景可编辑） */}
+            <Form.Item
+              label="车辆所在地"
+              name="vehicleLocation"
+              initialValue={vehicle?.location}
+              rules={[{ required: true, message: '请输入车辆所在地' }]}
+            >
+              <Input placeholder="请输入车辆所在地" maxLength={50} />
+            </Form.Item>
           </Card>
         )}
 

@@ -44,6 +44,10 @@ export interface Strategy {
   vehicleStatus: VehicleStatusType; // 车辆状态
   disposalCount: number; // 处置次数
 
+  // 财务指标-附加费用（P0修复）
+  certificateFee?: number; // 办证费(仅批发)
+  deliveryServiceFee?: number; // 交付服务费(仅批发)
+
   // 基础信息
   location: string; // 车辆所在地(省-市)
   store: string; // 所属门店
@@ -100,6 +104,13 @@ export interface DisposalRecord {
   buyer: string | null;
   buyerPhone: string | null;
   orderNo: string | null;
+  // 【P0修复】新增办证费和交付服务费字段
+  certificateFee?: number;
+  deliveryServiceFee?: number;
+  // 【P0修复】新增处置次数字段
+  auctionCount?: number;
+  // 【P0修复】新增拍卖备注说明字段
+  remarks?: string;
 }
 
 // 出价历史接口
@@ -121,6 +132,9 @@ export interface OperationLog {
   time: string;
   details?: string;
   type: 'strategy' | 'record';
+  // 【P1修复】新增IP地址/客户端审计字段
+  ipAddress?: string;
+  clientInfo?: string;
 }
 
 // 流转历史字段变更接口
@@ -337,6 +351,10 @@ export const mockStrategies: Strategy[] = Array.from({ length: 60 }, (_, i) => {
     vehicleStatus,
     disposalCount: status === 'executing' ? (1 + i % 2) : status === 'completed' ? (1 + i % 3) : status === 'cancelled' ? (i % 2) : 0,
 
+    // 财务指标-附加费用（P0修复）
+    certificateFee: disposalType === 'wholesale' && status === 'completed' ? 500 + Math.floor(Math.random() * 500) : undefined,
+    deliveryServiceFee: disposalType === 'wholesale' && status === 'completed' ? 300 + Math.floor(Math.random() * 200) : undefined,
+
     // 基础信息
     location: i % 5 === 0 ? '河南-郑州' : i % 5 === 1 ? '广东-深圳' : i % 5 === 2 ? '北京-北京' : i % 5 === 3 ? '上海-上海' : '浙江-杭州',
     store: stores[i % stores.length],
@@ -439,6 +457,11 @@ mockStrategies.forEach((strategy, strategyIndex) => {
       buyer,
       buyerPhone: buyer ? `138****${String(1000 + Math.floor(Math.random() * 9000))}` : null,
       orderNo: result === 'sold' ? `DD${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}${String(100000 + strategyIndex).slice(-6)}` : null,
+      // 【P0修复】新增字段
+      certificateFee: result === 'sold' ? 500 + Math.floor(Math.random() * 500) : undefined,
+      deliveryServiceFee: result === 'sold' ? 300 + Math.floor(Math.random() * 200) : undefined,
+      auctionCount: i + 1,
+      remarks: result === 'unsold' ? '本次流拍，保留价过高' : result === 'sold' ? '成交，正常结案' : undefined,
     });
   }
 });
@@ -470,6 +493,12 @@ mockRecords.forEach((record) => {
 
 // 生成操作日志
 export const mockOperationLogs: OperationLog[] = [];
+
+// 模拟IP地址库
+const ipAddresses = ['192.168.1.100', '10.0.0.50', '172.16.0.25', '192.168.2.88', '10.10.10.10'];
+// 模拟客户端信息库
+const clientInfos = ['Chrome/120.0 Windows 10', 'Safari/17.0 macOS Sonoma', 'Firefox/121.0 Windows 11', 'Edge/120.0 Windows 10', 'Chrome/119.0 Android 14'];
+
 mockStrategies.forEach((strategy) => {
   const createdDate = new Date(strategy.createdTime);
 
@@ -482,6 +511,9 @@ mockStrategies.forEach((strategy) => {
     time: strategy.createdTime,
     details: `处置方式: ${strategy.disposalType === 'wholesale' ? '批发' : '零售'}, 当前保留价: ¥${strategy.currentReservePrice.toLocaleString()}, 公司标准保留价: ¥${strategy.standardReservePrice.toLocaleString()}`,
     type: 'strategy',
+    // 【P1修复】新增IP地址/客户端审计字段
+    ipAddress: ipAddresses[strategy.id % ipAddresses.length],
+    clientInfo: clientInfos[strategy.id % clientInfos.length],
   });
 
   // 状态变更日志
@@ -502,6 +534,8 @@ mockStrategies.forEach((strategy) => {
       time: `${executeDate.getFullYear()}-${String(executeDate.getMonth() + 1).padStart(2, '0')}-${String(executeDate.getDate()).padStart(2, '0')} ${String(executeDate.getHours()).padStart(2, '0')}:${String(executeDate.getMinutes()).padStart(2, '0')}`,
       details: `待处置 → 执行中(车辆已上架至${platformNames[strategy.platform]}平台)`,
       type: 'strategy',
+      ipAddress: ipAddresses[strategy.id % ipAddresses.length],
+      clientInfo: clientInfos[strategy.id % clientInfos.length],
     });
   }
 
@@ -516,6 +550,8 @@ mockStrategies.forEach((strategy) => {
       time: `${adjustDate.getFullYear()}-${String(adjustDate.getMonth() + 1).padStart(2, '0')}-${String(adjustDate.getDate()).padStart(2, '0')} 10:30`,
       details: `调整原因: 流拍-保留价过高, 当前保留价: ¥${oldPrice.toLocaleString()} → ¥${strategy.currentReservePrice.toLocaleString()}`,
       type: 'strategy',
+      ipAddress: ipAddresses[strategy.id % ipAddresses.length],
+      clientInfo: clientInfos[strategy.id % clientInfos.length],
     });
   }
 
@@ -529,6 +565,8 @@ mockStrategies.forEach((strategy) => {
       time: `${cancelDate.getFullYear()}-${String(cancelDate.getMonth() + 1).padStart(2, '0')}-${String(cancelDate.getDate()).padStart(2, '0')} ${String(cancelDate.getHours()).padStart(2, '0')}:${String(cancelDate.getMinutes()).padStart(2, '0')}`,
       details: strategy.cancelReason || '取消原因: 车辆已通过其他渠道售出',
       type: 'strategy',
+      ipAddress: ipAddresses[strategy.id % ipAddresses.length],
+      clientInfo: clientInfos[strategy.id % clientInfos.length],
     });
   }
 
@@ -542,6 +580,8 @@ mockStrategies.forEach((strategy) => {
       time: `${completeDate.getFullYear()}-${String(completeDate.getMonth() + 1).padStart(2, '0')}-${String(completeDate.getDate()).padStart(2, '0')} 16:00`,
       details: '处置记录成交,策略已完成',
       type: 'strategy',
+      ipAddress: ipAddresses[strategy.id % ipAddresses.length],
+      clientInfo: clientInfos[strategy.id % clientInfos.length],
     });
   }
 });

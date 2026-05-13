@@ -226,6 +226,13 @@ const WholesaleRecordList = () => {
       render: () => '¥500',
     },
     {
+      title: '交付服务费(元)',
+      key: 'deliveryServiceFee',
+      width: 120,
+      align: 'right',
+      render: () => '¥300',
+    },
+    {
       title: '拍卖总次数',
       key: 'auctionCount',
       width: 110,
@@ -612,6 +619,190 @@ const WholesaleRecordList = () => {
                         onChange={(value) => setFilters({ ...filters, auctionCountMax: value || undefined })}
                       />
                     </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* 【P1修复】财务与金额筛选区 */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#202124', marginBottom: 12 }}>财务与金额筛选</div>
+                <Row gutter={[16, 16]}>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>收购价范围(万)</div>
+                    <div style={{ display: 'flex', width: '100%' }}>
+                      <InputNumber
+                        min={0}
+                        precision={2}
+                        placeholder="最小值"
+                        style={{ width: '50%' }}
+                        value={filters.purchasePriceMin}
+                        onChange={(value) => setFilters({ ...filters, purchasePriceMin: value || undefined })}
+                      />
+                      <InputNumber
+                        min={0}
+                        precision={2}
+                        placeholder="最大值"
+                        style={{ width: '50%' }}
+                        value={filters.purchasePriceMax}
+                        onChange={(value) => setFilters({ ...filters, purchasePriceMax: value || undefined })}
+                      />
+                    </div>
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>拍卖保留价范围(万)</div>
+                    <div style={{ display: 'flex', width: '100%' }}>
+                      <InputNumber
+                        min={0}
+                        precision={2}
+                        placeholder="最小值"
+                        style={{ width: '50%' }}
+                        value={filters.reservePriceMin}
+                        onChange={(value) => setFilters({ ...filters, reservePriceMin: value || undefined })}
+                      />
+                      <InputNumber
+                        min={0}
+                        precision={2}
+                        placeholder="最大值"
+                        style={{ width: '50%' }}
+                        value={filters.reservePriceMax}
+                        onChange={(value) => setFilters({ ...filters, reservePriceMax: value || undefined })}
+                      />
+                    </div>
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>拍卖最高价范围(万)</div>
+                    <div style={{ display: 'flex', width: '100%' }}>
+                      <InputNumber
+                        min={0}
+                        precision={2}
+                        placeholder="最小值"
+                        style={{ width: '50%' }}
+                        value={filters.maxBidMin}
+                        onChange={(value) => setFilters({ ...filters, maxBidMin: value || undefined })}
+                      />
+                      <InputNumber
+                        min={0}
+                        precision={2}
+                        placeholder="最大值"
+                        style={{ width: '50%' }}
+                        value={filters.maxBidMax}
+                        onChange={(value) => setFilters({ ...filters, maxBidMax: value || undefined })}
+                      />
+                    </div>
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>盈亏状态</div>
+                    <Select
+                      placeholder="请选择"
+                      style={{ width: '100%' }}
+                      value={filters.profitStatus || undefined}
+                      onChange={(value) => setFilters({ ...filters, profitStatus: value })}
+                      allowClear
+                    >
+                      <Option value="盈利">盈利</Option>
+                      <Option value="亏损">亏损</Option>
+                    </Select>
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>盈亏金额范围(万)</div>
+                    <div style={{ display: 'flex', width: '100%' }}>
+                      <InputNumber
+                        precision={2}
+                        placeholder="最小值"
+                        style={{ width: '50%' }}
+                        value={filters.profitMin}
+                        onChange={(value) => setFilters({ ...filters, profitMin: value || undefined })}
+                      />
+                      <InputNumber
+                        precision={2}
+                        placeholder="最大值"
+                        style={{ width: '50%' }}
+                        value={filters.profitMax}
+                        onChange={(value) => setFilters({ ...filters, profitMax: value || undefined })}
+                      />
+                    </div>
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>办证费范围(元)</div>
+                    <div style={{ display: 'flex', width: '100%' }}>
+                      <InputNumber
+                        min={0}
+                        precision={2}
+                        placeholder="最小值"
+                        style={{ width: '50%' }}
+                        value={filters.certificateFeeMin}
+                        onChange={(value) => setFilters({ ...filters, certificateFeeMin: value || undefined })}
+                      />
+                      <InputNumber
+                        min={0}
+                        precision={2}
+                        placeholder="最大值"
+                        style={{ width: '50%' }}
+                        value={filters.certificateFeeMax}
+                        onChange={(value) => setFilters({ ...filters, certificateFeeMax: value || undefined })}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* 【P1修复】人员与时间维度筛选区 */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#202124', marginBottom: 12 }}>人员与时间维度筛选</div>
+                <Row gutter={[16, 16]}>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>中拍人姓名</div>
+                    <Input
+                      placeholder="请输入中拍人姓名"
+                      value={filters.buyer}
+                      onChange={(e) => setFilters({ ...filters, buyer: e.target.value })}
+                      maxLength={20}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>中拍人注册地</div>
+                    <Input
+                      placeholder="请输入中拍人注册地"
+                      value={filters.buyerCity}
+                      onChange={(e) => setFilters({ ...filters, buyerCity: e.target.value })}
+                      maxLength={50}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>操作人</div>
+                    <Input
+                      placeholder="请输入操作人姓名"
+                      value={filters.operator}
+                      onChange={(e) => setFilters({ ...filters, operator: e.target.value })}
+                      maxLength={20}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>拍卖日期范围</div>
+                    <RangePicker
+                      style={{ width: '100%' }}
+                      value={filters.auctionDateRange}
+                      onChange={(dates) => setFilters({ ...filters, auctionDateRange: dates })}
+                      placeholder={['开始日期', '结束日期']}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>成交时间范围</div>
+                    <RangePicker
+                      style={{ width: '100%' }}
+                      value={filters.dealTimeRange}
+                      onChange={(dates) => setFilters({ ...filters, dealTimeRange: dates })}
+                      placeholder={['开始日期', '结束日期']}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 500, color: '#80868b' }}>更新时间范围</div>
+                    <RangePicker
+                      style={{ width: '100%' }}
+                      value={filters.updateTimeRange}
+                      onChange={(dates) => setFilters({ ...filters, updateTimeRange: dates })}
+                      placeholder={['开始日期', '结束日期']}
+                    />
                   </Col>
                 </Row>
               </div>
